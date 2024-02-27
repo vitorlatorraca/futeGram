@@ -3,16 +3,16 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
+  FormMessage
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { SignupValidation } from "@/lib/validation"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { Link } from "react-router-dom"
 import { z } from "zod"
 
 const SignupForm = () => {
@@ -31,14 +31,12 @@ const form = useForm<z.infer<typeof SignupValidation>>({
 
 // 2. Define a submit handler.
 function onSubmit(values: z.infer<typeof SignupValidation>) {
-  // Do something with the form values.
-  // ✅ This will be type-safe and validated.
-  console.log(values)
+  // const newUser = await createUserAccount (values);
 }
   return (
 <Form {...form}>
       <div className="sm:w-420 flex-center flex-col">
-        <img src="/assets/corinthians.svg"/>
+        <img src="/assets/react.svg"/>
 
         <h2 className="h3-bold md:h2-bold pt-5 sm:pt-12">
           Create a new account
@@ -57,9 +55,6 @@ function onSubmit(values: z.infer<typeof SignupValidation>) {
               <FormControl>
                 <Input type= "text" className="shad-input" {...field} />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -73,41 +68,32 @@ function onSubmit(values: z.infer<typeof SignupValidation>) {
               <FormControl>
                 <Input type= "text" className="shad-input" {...field} />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
           <FormField
           control={form.control}
-          name="name"
+          name="email"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
                 <Input type= "email" className="shad-input" {...field} />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <FormField
           control={form.control}
-          name="username"
+          name="password"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
                 <Input type= "password" className="shad-input" {...field} />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -119,6 +105,11 @@ function onSubmit(values: z.infer<typeof SignupValidation>) {
             </div>
           ): "Sign Up"}
         </Button>
+        
+        <p className="text-small-regular text-light-2 text-center mt-2">
+          Already have an account?
+          <Link to="/sign-in" className="text-primary-500 text-small-semibold ml-1 " > Log in </Link>
+          </p>
       </form>
       </div>
     </Form>

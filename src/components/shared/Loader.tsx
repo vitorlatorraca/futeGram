@@ -6,6 +6,7 @@ const Loader = () => {
         src="/assets/react.svg"
         alt="Loader"
         width={24}
+        height={24}
         />
     </div>
   )
