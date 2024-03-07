@@ -34,13 +34,10 @@ type IContextType = {
 const AuthContext = createContext<IContextType>(INITIAL_STATE);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  
+  const navigate = useNavigate();
   const [user, setUser] = useState<IUser>(INITIAL_USER);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  const navigate = useNavigate();
-
 
   const checkAuthUser = async () => {
     setIsLoading(true);
@@ -70,12 +67,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // const cookieFallback = localStorage.getItem("cookieFallback");
+    const cookieFallback = localStorage.getItem("cookieFallback");
     if (
-      localStorage.getItem('cookieFallback') === '[]'
-    )
-      navigate('/sign-in');
-    
+      cookieFallback === "[]" ||
+      cookieFallback === null ||
+      cookieFallback === undefined
+    ) {
+      navigate("/sign-in");
+    }
+
     checkAuthUser();
   }, []);
 
