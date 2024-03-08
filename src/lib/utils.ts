@@ -1,34 +1,58 @@
-import * as z from "zod";
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
 
-// ============================================================
-// USER
-// ============================================================
-export const SignupValidation = z.object({
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  username: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email(),
-  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
-});
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
-export const SigninValidation = z.object({
-  email: z.string().email(),
-  password: z.string().min(8, { message: "Password must be at least 8 characters." }),
-});
+export const convertFileToUrl = (file: File) => URL.createObjectURL(file);
 
-export const ProfileValidation = z.object({
-  file: z.custom<File[]>(),
-  name: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  username: z.string().min(2, { message: "Name must be at least 2 characters." }),
-  email: z.string().email(),
-  bio: z.string(),
-});
+export function formatDateString(dateString: string) {
+  const options: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  };
 
-// ============================================================
-// POST
-// ============================================================
-export const PostValidation = z.object({
-  caption: z.string().min(5, { message: "Minimum 5 characters." }).max(2200, { message: "Maximum 2,200 caracters" }),
-  file: z.custom<File[]>(),
-  location: z.string().min(1, { message: "This field is required" }).max(1000, { message: "Maximum 1000 characters." }),
-  tags: z.string(),
-});
+  const date = new Date(dateString);
+  const formattedDate = date.toLocaleDateString("en-US", options);
+
+  const time = date.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit",
+  });
+
+  return `${formattedDate} at ${time}`;
+}
+
+// 
+export const multiFormatDateString = (timestamp: string = ""): string => {
+  const timestampNum = Math.round(new Date(timestamp).getTime() / 1000);
+  const date: Date = new Date(timestampNum * 1000);
+  const now: Date = new Date();
+
+  const diff: number = now.getTime() - date.getTime();
+  const diffInSeconds: number = diff / 1000;
+  const diffInMinutes: number = diffInSeconds / 60;
+  const diffInHours: number = diffInMinutes / 60;
+  const diffInDays: number = diffInHours / 24;
+
+  switch (true) {
+    case Math.floor(diffInDays) >= 30:
+      return formatDateString(timestamp);
+    case Math.floor(diffInDays) === 1:
+      return `${Math.floor(diffInDays)} day ago`;
+    case Math.floor(diffInDays) > 1 && diffInDays < 30:
+      return `${Math.floor(diffInDays)} days ago`;
+    case Math.floor(diffInHours) >= 1:
+      return `${Math.floor(diffInHours)} hours ago`;
+    case Math.floor(diffInMinutes) >= 1:
+      return `${Math.floor(diffInMinutes)} minutes ago`;
+    default:
+      return "Just now";
+  }
+};
+
+export const checkIsLiked = (likeList: string[], userId: string) => {
+  return likeList.includes(userId);
+};

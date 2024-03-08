@@ -1,546 +1,246 @@
-import { ID, Query } from "appwrite";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from "@tanstack/react-query";
 
+import { QUERY_KEYS } from "@/lib/react-query/queryKeys";
+import {
+  createUserAccount,
+  signInAccount,
+  getCurrentUser,
+  signOutAccount,
+  getUsers,
+  createPost,
+  getPostById,
+  updatePost,
+  getUserPosts,
+  deletePost,
+  likePost,
+  getUserById,
+  updateUser,
+  getRecentPosts,
+  getInfinitePosts,
+  searchPosts,
+  savePost,
+  deleteSavedPost,
+} from "@/lib/appwrite/api";
 import { INewPost, INewUser, IUpdatePost, IUpdateUser } from "@/types";
-import { account, appwriteConfig, avatars, databases, storage } from "./config";
 
 // ============================================================
-// AUTH
+// AUTH QUERIES
 // ============================================================
 
-// ============================== SIGN UP
-export async function createUserAccount(user: INewUser) {
-  try {
-    const newAccount = await account.create(
-      ID.unique(),
-      user.email,
-      user.password,
-      user.name
-    );
+export const useCreateUserAccount = () => {
+  return useMutation({
+    mutationFn: (user: INewUser) => createUserAccount(user),
+  });
+};
 
-    if (!newAccount) throw Error;
+export const useSignInAccount = () => {
+  return useMutation({
+    mutationFn: (user: { email: string; password: string }) =>
+      signInAccount(user),
+  });
+};
 
-    const avatarUrl = avatars.getInitials(user.name);
-
-    const newUser = await saveUserToDB({
-      accountId: newAccount.$id,
-      name: newAccount.name,
-      email: newAccount.email,
-      username: user.username,
-      imageUrl: avatarUrl,
-    });
-
-    return newUser;
-  } catch (error) {
-    console.log(error);
-    return error;
-  }
-}
-
-// ============================== SAVE USER TO DB
-export async function saveUserToDB(user: {
-  accountId: string;
-  email: string;
-  name: string;
-  imageUrl: URL;
-  username?: string;
-}) {
-  try {
-    const newUser = await databases.createDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      ID.unique(),
-      user
-    );
-
-    return newUser;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== SIGN IN
-export async function signInAccount(user: { email: string; password: string }) {
-  try {
-    const session = await account.createEmailSession(user.email, user.password);
-
-    return session;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== GET ACCOUNT
-export async function getAccount() {
-  try {
-    const currentAccount = await account.get();
-
-    return currentAccount;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== GET USER
-export async function getCurrentUser() {
-  try {
-    const currentAccount = await getAccount();
-
-    if (!currentAccount) throw Error;
-
-    const currentUser = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      [Query.equal("accountId", currentAccount.$id)]
-    );
-
-    if (!currentUser) throw Error;
-
-    return currentUser.documents[0];
-  } catch (error) {
-    console.log(error);
-    return null;
-  }
-}
-
-// ============================== SIGN OUT
-export async function signOutAccount() {
-  try {
-    const session = await account.deleteSession("current");
-
-    return session;
-  } catch (error) {
-    console.log(error);
-  }
-}
+export const useSignOutAccount = () => {
+  return useMutation({
+    mutationFn: signOutAccount,
+  });
+};
 
 // ============================================================
-// POSTS
+// POST QUERIES
 // ============================================================
 
-// ============================== CREATE POST
-export async function createPost(post: INewPost) {
-  try {
-    // Upload file to appwrite storage
-    const uploadedFile = await uploadFile(post.file[0]);
-
-    if (!uploadedFile) throw Error;
-
-    // Get file url
-    const fileUrl = getFilePreview(uploadedFile.$id);
-    if (!fileUrl) {
-      await deleteFile(uploadedFile.$id);
-      throw Error;
-    }
-
-    // Convert tags into array
-    const tags = post.tags?.replace(/ /g, "").split(",") || [];
-
-    // Create post
-    const newPost = await databases.createDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.postCollectionId,
-      ID.unique(),
-      {
-        creator: post.userId,
-        caption: post.caption,
-        imageUrl: fileUrl,
-        imageId: uploadedFile.$id,
-        location: post.location,
-        tags: tags,
-      }
-    );
-
-    if (!newPost) {
-      await deleteFile(uploadedFile.$id);
-      throw Error;
-    }
-
-    return newPost;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== UPLOAD FILE
-export async function uploadFile(file: File) {
-  try {
-    const uploadedFile = await storage.createFile(
-      appwriteConfig.storageId,
-      ID.unique(),
-      file
-    );
-
-    return uploadedFile;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== GET FILE URL
-export function getFilePreview(fileId: string) {
-  try {
-    const fileUrl = storage.getFilePreview(
-      appwriteConfig.storageId,
-      fileId,
-      2000,
-      2000,
-      "top",
-      100
-    );
-
-    if (!fileUrl) throw Error;
-
-    return fileUrl;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== DELETE FILE
-export async function deleteFile(fileId: string) {
-  try {
-    await storage.deleteFile(appwriteConfig.storageId, fileId);
-
-    return { status: "ok" };
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== GET POSTS
-export async function searchPosts(searchTerm: string) {
-  try {
-    const posts = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.postCollectionId,
-      [Query.search("caption", searchTerm)]
-    );
-
-    if (!posts) throw Error;
-
-    return posts;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
-  const queries: any[] = [Query.orderDesc("$updatedAt"), Query.limit(9)];
-
-  if (pageParam) {
-    queries.push(Query.cursorAfter(pageParam.toString()));
-  }
-
-  try {
-    const posts = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.postCollectionId,
-      queries
-    );
-
-    if (!posts) throw Error;
-
-    return posts;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== GET POST BY ID
-export async function getPostById(postId?: string) {
-  if (!postId) throw Error;
-
-  try {
-    const post = await databases.getDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.postCollectionId,
-      postId
-    );
-
-    if (!post) throw Error;
-
-    return post;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== UPDATE POST
-export async function updatePost(post: IUpdatePost) {
-  const hasFileToUpdate = post.file.length > 0;
-
-  try {
-    let image = {
-      imageUrl: post.imageUrl,
-      imageId: post.imageId,
-    };
-
-    if (hasFileToUpdate) {
-      // Upload new file to appwrite storage
-      const uploadedFile = await uploadFile(post.file[0]);
-      if (!uploadedFile) throw Error;
-
-      // Get new file url
-      const fileUrl = getFilePreview(uploadedFile.$id);
-      if (!fileUrl) {
-        await deleteFile(uploadedFile.$id);
-        throw Error;
+export const useGetPosts = () => {
+  return useInfiniteQuery({
+    queryKey: [QUERY_KEYS.GET_INFINITE_POSTS],
+    queryFn: getInfinitePosts as any,
+    getNextPageParam: (lastPage: any) => {
+      // If there's no data, there are no more pages.
+      if (lastPage && lastPage.documents.length === 0) {
+        return null;
       }
 
-      image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
-    }
+      // Use the $id of the last document as the cursor.
+      const lastId = lastPage.documents[lastPage.documents.length - 1].$id;
+      return lastId;
+    },
+  });
+};
 
-    // Convert tags into array
-    const tags = post.tags?.replace(/ /g, "").split(",") || [];
+export const useSearchPosts = (searchTerm: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.SEARCH_POSTS, searchTerm],
+    queryFn: () => searchPosts(searchTerm),
+    enabled: !!searchTerm,
+  });
+};
 
-    //  Update post
-    const updatedPost = await databases.updateDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.postCollectionId,
-      post.postId,
-      {
-        caption: post.caption,
-        imageUrl: image.imageUrl,
-        imageId: image.imageId,
-        location: post.location,
-        tags: tags,
-      }
-    );
+export const useGetRecentPosts = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+    queryFn: getRecentPosts,
+  });
+};
 
-    // Failed to update
-    if (!updatedPost) {
-      // Delete new file that has been recently uploaded
-      if (hasFileToUpdate) {
-        await deleteFile(image.imageId);
-      }
+export const useCreatePost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (post: INewPost) => createPost(post),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+    },
+  });
+};
 
-      // If no new file uploaded, just throw error
-      throw Error;
-    }
+export const useGetPostById = (postId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_POST_BY_ID, postId],
+    queryFn: () => getPostById(postId),
+    enabled: !!postId,
+  });
+};
 
-    // Safely delete old file after successful update
-    if (hasFileToUpdate) {
-      await deleteFile(post.imageId);
-    }
+export const useGetUserPosts = (userId?: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_POSTS, userId],
+    queryFn: () => getUserPosts(userId),
+    enabled: !!userId,
+  });
+};
 
-    return updatedPost;
-  } catch (error) {
-    console.log(error);
-  }
-}
+export const useUpdatePost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (post: IUpdatePost) => updatePost(post),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POST_BY_ID, data?.$id],
+      });
+    },
+  });
+};
 
-// ============================== DELETE POST
-export async function deletePost(postId?: string, imageId?: string) {
-  if (!postId || !imageId) return;
+export const useDeletePost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ postId, imageId }: { postId?: string; imageId: string }) =>
+      deletePost(postId, imageId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+    },
+  });
+};
 
-  try {
-    const statusCode = await databases.deleteDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.postCollectionId,
-      postId
-    );
-
-    if (!statusCode) throw Error;
-
-    await deleteFile(imageId);
-
-    return { status: "Ok" };
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== LIKE / UNLIKE POST
-export async function likePost(postId: string, likesArray: string[]) {
-  try {
-    const updatedPost = await databases.updateDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.postCollectionId,
+export const useLikePost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({
       postId,
-      {
-        likes: likesArray,
-      }
-    );
+      likesArray,
+    }: {
+      postId: string;
+      likesArray: string[];
+    }) => likePost(postId, likesArray),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POST_BY_ID, data?.$id],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+    },
+  });
+};
 
-    if (!updatedPost) throw Error;
+export const useSavePost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, postId }: { userId: string; postId: string }) =>
+      savePost(userId, postId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+    },
+  });
+};
 
-    return updatedPost;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== SAVE POST
-export async function savePost(userId: string, postId: string) {
-  try {
-    const updatedPost = await databases.createDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.savesCollectionId,
-      ID.unique(),
-      {
-        user: userId,
-        post: postId,
-      }
-    );
-
-    if (!updatedPost) throw Error;
-
-    return updatedPost;
-  } catch (error) {
-    console.log(error);
-  }
-}
-// ============================== DELETE SAVED POST
-export async function deleteSavedPost(savedRecordId: string) {
-  try {
-    const statusCode = await databases.deleteDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.savesCollectionId,
-      savedRecordId
-    );
-
-    if (!statusCode) throw Error;
-
-    return { status: "Ok" };
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== GET USER'S POST
-export async function getUserPosts(userId?: string) {
-  if (!userId) return;
-
-  try {
-    const post = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.postCollectionId,
-      [Query.equal("creator", userId), Query.orderDesc("$createdAt")]
-    );
-
-    if (!post) throw Error;
-
-    return post;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== GET POPULAR POSTS (BY HIGHEST LIKE COUNT)
-export async function getRecentPosts() {
-  try {
-    const posts = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.postCollectionId,
-      [Query.orderDesc("$createdAt"), Query.limit(20)]
-    );
-
-    if (!posts) throw Error;
-
-    return posts;
-  } catch (error) {
-    console.log(error);
-  }
-}
+export const useDeleteSavedPost = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (savedRecordId: string) => deleteSavedPost(savedRecordId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_RECENT_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_POSTS],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+    },
+  });
+};
 
 // ============================================================
-// USER
+// USER QUERIES
 // ============================================================
 
-// ============================== GET USERS
-export async function getUsers(limit?: number) {
-  const queries: any[] = [Query.orderDesc("$createdAt")];
+export const useGetCurrentUser = () => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+    queryFn: getCurrentUser,
+  });
+};
 
-  if (limit) {
-    queries.push(Query.limit(limit));
-  }
+export const useGetUsers = (limit?: number) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USERS],
+    queryFn: () => getUsers(limit),
+  });
+};
 
-  try {
-    const users = await databases.listDocuments(
-      appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      queries
-    );
+export const useGetUserById = (userId: string) => {
+  return useQuery({
+    queryKey: [QUERY_KEYS.GET_USER_BY_ID, userId],
+    queryFn: () => getUserById(userId),
+    enabled: !!userId,
+  });
+};
 
-    if (!users) throw Error;
-
-    return users;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== GET USER BY ID
-export async function getUserById(userId: string) {
-  try {
-    const user = await databases.getDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      userId
-    );
-
-    if (!user) throw Error;
-
-    return user;
-  } catch (error) {
-    console.log(error);
-  }
-}
-
-// ============================== UPDATE USER
-export async function updateUser(user: IUpdateUser) {
-  const hasFileToUpdate = user.file.length > 0;
-  try {
-    let image = {
-      imageUrl: user.imageUrl,
-      imageId: user.imageId,
-    };
-
-    if (hasFileToUpdate) {
-      // Upload new file to appwrite storage
-      const uploadedFile = await uploadFile(user.file[0]);
-      if (!uploadedFile) throw Error;
-
-      // Get new file url
-      const fileUrl = getFilePreview(uploadedFile.$id);
-      if (!fileUrl) {
-        await deleteFile(uploadedFile.$id);
-        throw Error;
-      }
-
-      image = { ...image, imageUrl: fileUrl, imageId: uploadedFile.$id };
-    }
-
-    //  Update user
-    const updatedUser = await databases.updateDocument(
-      appwriteConfig.databaseId,
-      appwriteConfig.userCollectionId,
-      user.userId,
-      {
-        name: user.name,
-        bio: user.bio,
-        imageUrl: image.imageUrl,
-        imageId: image.imageId,
-      }
-    );
-
-    // Failed to update
-    if (!updatedUser) {
-      // Delete new file that has been recently uploaded
-      if (hasFileToUpdate) {
-        await deleteFile(image.imageId);
-      }
-      // If no new file uploaded, just throw error
-      throw Error;
-    }
-
-    // Safely delete old file after successful update
-    if (user.imageId && hasFileToUpdate) {
-      await deleteFile(user.imageId);
-    }
-
-    return updatedUser;
-  } catch (error) {
-    console.log(error);
-  }
-}
+export const useUpdateUser = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (user: IUpdateUser) => updateUser(user),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_CURRENT_USER],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [QUERY_KEYS.GET_USER_BY_ID, data?.$id],
+      });
+    },
+  });
+};

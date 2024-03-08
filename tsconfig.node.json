@@ -1,11 +1,10 @@
 {
-  "github": {
-      "silent": true
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true
   },
-  "rewrites": [
-      {
-          "source": "/(.*)",
-          "destination": "/"
-      }
-  ]
+  "include": ["vite.config.ts"]
 }
