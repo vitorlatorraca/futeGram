@@ -1,49 +1,49 @@
-import { useCallback, useState } from "react";
-import { FileWithPath, useDropzone } from "react-dropzone";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
-import { convertFileToUrl } from "@/lib/utils";
+import { useUserContext } from "@/context/AuthContext";
+import { useSignOutAccount } from "@/lib/react-query/queries";
+import { Button } from "../ui/button";
 
-type ProfileUploaderProps = {
-  fieldChange: (files: File[]) => void;
-  mediaUrl: string;
-};
+const Topbar = () => {
+  const navigate = useNavigate();
+  const { user } = useUserContext();
+  const { mutate: signOut, isSuccess } = useSignOutAccount();
 
-const ProfileUploader = ({ fieldChange, mediaUrl }: ProfileUploaderProps) => {
-  const [file, setFile] = useState<File[]>([]);
-  const [fileUrl, setFileUrl] = useState<string>(mediaUrl);
-
-  const onDrop = useCallback(
-    (acceptedFiles: FileWithPath[]) => {
-      setFile(acceptedFiles);
-      fieldChange(acceptedFiles);
-      setFileUrl(convertFileToUrl(acceptedFiles[0]));
-    },
-    [file]
-  );
-
-  const { getRootProps, getInputProps } = useDropzone({
-    onDrop,
-    accept: {
-      "image/*": [".png", ".jpeg", ".jpg"],
-    },
-  });
+  useEffect(() => {
+    if (isSuccess) navigate(0);
+  }, [isSuccess]);
 
   return (
-    <div {...getRootProps()}>
-      <input {...getInputProps()} className="cursor-pointer" />
+    <section className="topbar">
+      <div className="flex-between py-4 px-5">
+        <Link to="/" className="flex gap-3 items-center">
+          <img
+            src="/assets/react.svg"
+            alt="logo"
+            width={130}
+            height={325}
+          />
+        </Link>
 
-      <div className="cursor-pointer flex-center gap-4">
-        <img
-          src={fileUrl || "/assets/icons/profile-placeholder.svg"}
-          alt="image"
-          className="h-24 w-24 rounded-full object-cover object-top"
-        />
-        <p className="text-primary-500 small-regular md:bbase-semibold">
-          Change profile photo
-        </p>
+        <div className="flex gap-4">
+          <Button
+            variant="ghost"
+            className="shad-button_ghost"
+            onClick={() => signOut()}>
+            <img src="/assets/icons/logout.svg" alt="logout" />
+          </Button>
+          <Link to={`/profile/${user.id}`} className="flex-center gap-3">
+            <img
+              src={user.imageUrl || "/assets/icons/profile-placeholder.svg"}
+              alt="profile"
+              className="h-8 w-8 rounded-full"
+            />
+          </Link>
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
 
-export default ProfileUploader;
+export default Topbar;

@@ -1414,9 +1414,9 @@
       }
     },
     "node_modules/@remix-run/router": {
-      "version": "1.15.3",
-      "resolved": "https://registry.npmjs.org/@remix-run/router/-/router-1.15.3.tgz",
-      "integrity": "sha512-Oy8rmScVrVxWZVOpEF57ovlnhpZ8CCPlnIIumVcV9nFdiSIrus99+Lw78ekXyGvVDlIsFJbSfmSovJUhCWYV3w==",
+      "version": "1.15.2",
+      "resolved": "https://registry.npmjs.org/@remix-run/router/-/router-1.15.2.tgz",
+      "integrity": "sha512-+Rnav+CaoTE5QJc4Jcwh5toUpnVLKYbpU6Ys0zqbakqbaLQHeglLVHPfxOiQqdNmUy5C2lXz5dwC6tQNX2JW2Q==",
       "engines": {
         "node": ">=14.0.0"
       }
@@ -2156,9 +2156,9 @@
       }
     },
     "node_modules/caniuse-lite": {
-      "version": "1.0.30001596",
-      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001596.tgz",
-      "integrity": "sha512-zpkZ+kEr6We7w63ORkoJ2pOfBwBkY/bJrG/UZ90qNb45Isblu8wzDgevEOrRL1r9dWayHjYiiyCMEXPn4DweGQ==",
+      "version": "1.0.30001594",
+      "resolved": "https://registry.npmjs.org/caniuse-lite/-/caniuse-lite-1.0.30001594.tgz",
+      "integrity": "sha512-VblSX6nYqyJVs8DKFMldE2IVCJjZ225LW00ydtUWwh5hk9IfkTOffO6r8gJNsH0qqqeAF8KrbMYA2VEwTlGW5g==",
       "dev": true,
       "funding": [
         {
@@ -2405,9 +2405,9 @@
       "integrity": "sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA=="
     },
     "node_modules/electron-to-chromium": {
-      "version": "1.4.697",
-      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.4.697.tgz",
-      "integrity": "sha512-iPS+iUNUrqTkPRFjMYv1FGXIUYhj2K4rc/93nrDsDtQGMUqyRouCq/xABOSOljKbriEiwg0bEQHGaeD4OaU56g==",
+      "version": "1.4.695",
+      "resolved": "https://registry.npmjs.org/electron-to-chromium/-/electron-to-chromium-1.4.695.tgz",
+      "integrity": "sha512-eMijZmeqPtm774pCZIOrfUHMs/7ls++W1sLhxwqgu8KQ8E2WmMtzwyqOMt0XXUJ3HTIPfuwlfwF+I5cwnfItBA==",
       "dev": true
     },
     "node_modules/emoji-regex": {
@@ -3893,11 +3893,11 @@
       }
     },
     "node_modules/react-router": {
-      "version": "6.22.3",
-      "resolved": "https://registry.npmjs.org/react-router/-/react-router-6.22.3.tgz",
-      "integrity": "sha512-dr2eb3Mj5zK2YISHK++foM9w4eBnO23eKnZEDs7c880P6oKbrjz/Svg9+nxqtHQK+oMW4OtjZca0RqPglXxguQ==",
+      "version": "6.22.2",
+      "resolved": "https://registry.npmjs.org/react-router/-/react-router-6.22.2.tgz",
+      "integrity": "sha512-YD3Dzprzpcq+tBMHBS822tCjnWD3iIZbTeSXMY9LPSG541EfoBGyZ3bS25KEnaZjLcmQpw2AVLkFyfgXY8uvcw==",
       "dependencies": {
-        "@remix-run/router": "1.15.3"
+        "@remix-run/router": "1.15.2"
       },
       "engines": {
         "node": ">=14.0.0"
@@ -3907,12 +3907,12 @@
       }
     },
     "node_modules/react-router-dom": {
-      "version": "6.22.3",
-      "resolved": "https://registry.npmjs.org/react-router-dom/-/react-router-dom-6.22.3.tgz",
-      "integrity": "sha512-7ZILI7HjcE+p31oQvwbokjk6OA/bnFxrhJ19n82Ex9Ph8fNAq+Hm/7KchpMGlTgWhUxRHMMCut+vEtNpWpowKw==",
+      "version": "6.22.2",
+      "resolved": "https://registry.npmjs.org/react-router-dom/-/react-router-dom-6.22.2.tgz",
+      "integrity": "sha512-WgqxD2qySEIBPZ3w0sHH+PUAiamDeszls9tzqMPBDA1YYVucTBXLU7+gtRfcSnhe92A3glPnvSxK2dhNoAVOIQ==",
       "dependencies": {
-        "@remix-run/router": "1.15.3",
-        "react-router": "6.22.3"
+        "@remix-run/router": "1.15.2",
+        "react-router": "6.22.2"
       },
       "engines": {
         "node": ">=14.0.0"
