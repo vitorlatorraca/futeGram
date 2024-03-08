@@ -1,4 +1,4 @@
-import { Outlet, Navigate } from "react-router-dom";
+import { Navigate, Outlet } from "react-router-dom";
 
 import { useUserContext } from "@/context/AuthContext";
 
@@ -16,7 +16,7 @@ export default function AuthLayout() {
           </section>
 
           <img
-            src="/assets/images/side-img.svg"
+            src="/assets/images/corinthians.png"
             alt="logo"
             className="hidden xl:block h-screen w-1/2 object-cover bg-no-repeat"
           />
