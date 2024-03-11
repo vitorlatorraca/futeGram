@@ -1,21 +1,21 @@
-import { Routes, Route } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 
+import SigninForm from "@/_auth/forms/SigninForm";
+import SignupForm from "@/_auth/forms/SignupForm";
 import {
-  Home,
-  Explore,
-  Saved,
-  CreatePost,
-  Profile,
-  EditPost,
-  PostDetails,
-  UpdateProfile,
   AllUsers,
+  CreatePost,
+  EditPost,
+  Explore,
+  Home,
+  PostDetails,
+  Profile,
+  Saved,
+  UpdateProfile,
 } from "@/_root/pages";
+import { Toaster } from "@/components/ui/toaster";
 import AuthLayout from "./_auth/AuthLayout";
 import RootLayout from "./_root/RootLayout";
-import SignupForm from "@/_auth/forms/SignupForm";
-import SigninForm from "@/_auth/forms/SigninForm";
-import { Toaster } from "@/components/ui/toaster";
 
 import "./globals.css";
 
@@ -49,3 +49,5 @@ const App = () => {
 };
 
 export default App;
+
+
